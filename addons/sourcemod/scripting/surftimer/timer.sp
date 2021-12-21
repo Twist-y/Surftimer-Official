@@ -604,10 +604,20 @@ public Action CenterSpeedDisplayTimer(Handle timer, any client)
 	if (IsValidClient(client) && !IsFakeClient(client) && g_bCenterSpeedDisplay[client])
 	{
 		char szSpeed[128];
+		int SpecMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
+		int ObservedUser = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 		if (IsPlayerAlive(client))
+		{
 			Format(szSpeed, sizeof(szSpeed), "%i", RoundToNearest(g_fLastSpeed[client]));
-		else if (g_SpecTarget[client] != -1)
-			Format(szSpeed, sizeof(szSpeed), "%i", RoundToNearest(g_fLastSpeed[g_SpecTarget[client]]));
+		}
+		else if (SpecMode == 4 || SpecMode == 5)
+		{
+			g_SpecTarget[client] = ObservedUser;
+
+			GetEntPropVector(ObservedUser, Prop_Data, "m_vecVelocity", fSpeed);
+			float fSpeedCenter = SquareRoot(Pow(fSpeed[0], 2.0) + Pow(fSpeed[1], 2.0));
+			Format(szSpeed, sizeof(szSpeed), "%i", RoundToNearest(fSpeedCenter));
+		}
 
 		ShowHudText(client, 2, szSpeed);
 	}
